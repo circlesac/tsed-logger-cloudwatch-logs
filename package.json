@@ -1,6 +1,6 @@
 {
   "name": "@circlesac/tsed-logger-cloudwatch-logs",
-  "version": "0.0.13",
+  "version": "0.0.15",
   "type": "module",
   "scripts": {
     "barrels": "barrels",

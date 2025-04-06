@@ -6,6 +6,10 @@ export const cloudWatchLogs = new CloudWatchLogs()
 
 @Appender({ name: "cloudwatch-logs" })
 export class CloudWatchLogsAppender extends BaseAppender {
+
+	private existLogGroupChecked: boolean = false
+	private existLogStreamChecked: boolean = false
+
 	async write(logEvent: LogEvent) {
 		const level = logEvent.level.toString().toLowerCase()
 		if (level === "off") return
@@ -15,8 +19,14 @@ export class CloudWatchLogsAppender extends BaseAppender {
 		const logStreamName = logEvent.categoryName
 
 		const cloudWatchLogs = new CloudWatchLogs({ region, endpoint, credentials })
-		await $trycatch(cloudWatchLogs.send(new CreateLogGroupCommand({ logGroupName })))
-		await $trycatch(cloudWatchLogs.send(new CreateLogStreamCommand({ logGroupName, logStreamName })))
+		if (!this.existLogGroupChecked) {
+			await $trycatch(cloudWatchLogs.send(new CreateLogGroupCommand({ logGroupName })))
+			this.existLogGroupChecked = true
+		}
+		if (!this.existLogStreamChecked) {
+			await $trycatch(cloudWatchLogs.send(new CreateLogStreamCommand({ logGroupName, logStreamName })))
+			this.existLogStreamChecked = true
+		}
 
 		// log
 		const message = this.layout(logEvent)
